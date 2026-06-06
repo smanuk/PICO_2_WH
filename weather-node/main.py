@@ -1,6 +1,8 @@
-from machine import Pin, lightsleep, deepsleep
-import dht
+from machine import lightsleep, deepsleep
 import json
+
+import wifi
+import weather_sensor
 
 # --- Config ----------------------------------------------------------------
 # Settings live in config.json on the device, read at runtime. Edit that file
@@ -31,20 +33,6 @@ def load_config():
         return dict(DEFAULTS)
 
 
-def read_and_report():
-    try:
-        # Trigger measurement
-        sensor.measure()
-        # Read values
-        temperature = sensor.temperature()  # In Celsius
-        humidity = sensor.humidity()  # In Percent
-        # Print values
-        print("[{}] Temperature: {} °C Humidity: {} %".format(
-            config["location"], temperature, humidity))
-    except OSError as e:
-        print("Failed to read sensor DHT22. {}".format(e))
-
-
 def sleep(interval_seconds):
     interval = interval_seconds * 1000
     if interval < 2000:
@@ -61,11 +49,15 @@ def sleep(interval_seconds):
 
 config = load_config()
 
+# Bring up WiFi at boot. In deepsleep mode the board resets each cycle, so this
+# re-runs (and reconnects) on every wake.
+wlan = wifi.connect()
+
 # Initialize the DHT22 sensor
-sensor = dht.DHT22(Pin(config["dht_pin"]))
+sensor = weather_sensor.create(config["dht_pin"])
 
 # Works for both modes: under deepsleep the board resets so the loop body runs
 # once per wake; under lightsleep it iterates normally.
 while True:
     sleep(config["interval_seconds"])
-    read_and_report()
+    weather_sensor.read_and_report(sensor, config["location"])

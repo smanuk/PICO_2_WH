@@ -1,0 +1,5 @@
+# WiFi / service credentials — never commit these
+secrets.json
+
+# macOS
+.DS_Store
