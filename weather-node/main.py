@@ -46,26 +46,27 @@ def load_config():
 
 
 def sleep(interval_seconds):
-    interval = interval_seconds * 1000
-    if interval < 2000:
-        interval = 2000
+    interval_millis = interval_seconds * 1000
+    if interval_millis < 2000:
+        interval_millis = 2000
 
     if config["dev_sleep"]:
         # Plain busy sleep: unlike lightsleep/deepsleep it leaves the CPU clock
         # and USB CDC alone, so the REPL stays connected and print() output keeps
         # flowing. Fixed 5s for debugging; interval_seconds is ignored here.
-        utime.sleep(interval)
+        utime.sleep(interval_seconds)
     elif config["deep_sleep"]:
         # deepsleep() powers down and RESETS the board, so it never returns --
         # the whole script re-runs from the top on wake.
-        deepsleep(interval)
+        deepsleep(interval_millis)
     else:
         # lightsleep() resumes on the next line, keeping the loop alive (but it
         # suspends USB, so the REPL/print() drop during the sleep).
-        lightsleep(interval)
+        lightsleep(interval_millis)
 
 
 config = load_config()
+print("Starting temp node: {}".format(config["locationName"]))
 
 # Initialize the DHT22 sensor
 sensor = weather_sensor.create(config["dht_pin"])
