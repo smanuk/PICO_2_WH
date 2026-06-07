@@ -9,15 +9,26 @@ def create(pin):
     return dht.DHT22(Pin(pin))
 
 
-def read_and_report(sensor, location):
+def read(sensor):
+    """Measure the DHT22 and return the reading.
+
+    Returns a dict {"temperature": <°C>, "humidity": <%>} on success, or
+    None if the read fails (the only thing reported from here is the error).
+    """
     try:
+        print("[TEMP LOG] read: triggering measure()")  # TEMP: remove
         # Trigger measurement
         sensor.measure()
-        # Read values
+
         temperature = sensor.temperature()  # In Celsius
         humidity = sensor.humidity()  # In Percent
-        # Print values
-        print("[{}] Temperature: {} °C Humidity: {} %".format(
-            location, temperature, humidity))
+        print("[TEMP LOG] read: temp={} humidity={}".format(  # TEMP: remove
+            temperature, humidity))  # TEMP: remove
+        return {
+            "temperature": temperature,
+            "humidity": humidity,
+        }
     except OSError as e:
+        print("[TEMP LOG] read: OSError -> returning None")  # TEMP: remove
         print("Failed to read sensor DHT22. {}".format(e))
+        return None
