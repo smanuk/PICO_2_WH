@@ -4,6 +4,7 @@ import utime
 
 import wifi
 import weather_sensor
+import reporter
 
 # --- Config ----------------------------------------------------------------
 # Settings live in config.json on the device, read at runtime. Edit that file
@@ -19,12 +20,14 @@ import weather_sensor
 #                          and ignores interval_seconds. Leave False otherwise.
 #   interval_seconds delay between reads (DHT22 needs at least 2 seconds).
 #   dht_pin          GPIO the sensor's data line is wired to.
+#   service_url      full URL each reading is POSTed to (host:port + path).
 DEFAULTS = {
     "locationName": "unknown",
     "deep_sleep": False,
     "dev_sleep": True,
     "interval_seconds": 15,
     "dht_pin": 16,
+    "service_url": "http://octo.homehack.cc:8080/api/readings",
 }
 
 
@@ -51,7 +54,7 @@ def sleep(interval_seconds):
         # Plain busy sleep: unlike lightsleep/deepsleep it leaves the CPU clock
         # and USB CDC alone, so the REPL stays connected and print() output keeps
         # flowing. Fixed 5s for debugging; interval_seconds is ignored here.
-        utime.sleep(15)
+        utime.sleep(interval)
     elif config["deep_sleep"]:
         # deepsleep() powers down and RESETS the board, so it never returns --
         # the whole script re-runs from the top on wake.
@@ -63,10 +66,6 @@ def sleep(interval_seconds):
 
 
 config = load_config()
-
-# Bring up WiFi at boot. In deepsleep mode the board resets each cycle, so this
-# re-runs (and reconnects) on every wake.
-wlan = wifi.connect()
 
 # Initialize the DHT22 sensor
 sensor = weather_sensor.create(config["dht_pin"])
@@ -81,5 +80,9 @@ while True:
         
         # Only power up the radio when there's actually something to ship.
         wlan = wifi.connect()
+        if wlan is not None:
+            reporter.send(config["service_url"], reading, config["locationName"])
+        else:
+            print("WiFi unavailable; skipping send, reading kept locally: {}".format(reading))
+            
     sleep(config["interval_seconds"])
-    weather_sensor.read_and_report(sensor, config["location"])
