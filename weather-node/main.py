@@ -1,5 +1,6 @@
 from machine import lightsleep, deepsleep
 import json
+import utime
 
 import wifi
 import weather_sensor
@@ -12,11 +13,16 @@ import weather_sensor
 #                          alive (use in dev).
 #                    True  = deepsleep: lowest power, but RESETS the board each
 #                          cycle (production).
+#   dev_sleep        True = plain utime.sleep(5): a busy 5s wait that does NOT
+#                          touch the USB connection, so the REPL and print()
+#                          output stay alive for debugging. Overrides deep_sleep
+#                          and ignores interval_seconds. Leave False otherwise.
 #   interval_seconds delay between reads (DHT22 needs at least 2 seconds).
 #   dht_pin          GPIO the sensor's data line is wired to.
 DEFAULTS = {
     "locationName": "unknown",
     "deep_sleep": False,
+    "dev_sleep": True,
     "interval_seconds": 15,
     "dht_pin": 16,
 }
@@ -41,12 +47,18 @@ def sleep(interval_seconds):
     if interval < 2000:
         interval = 2000
 
-    if config["deep_sleep"]:
+    if config["dev_sleep"]:
+        # Plain busy sleep: unlike lightsleep/deepsleep it leaves the CPU clock
+        # and USB CDC alone, so the REPL stays connected and print() output keeps
+        # flowing. Fixed 5s for debugging; interval_seconds is ignored here.
+        utime.sleep(15)
+    elif config["deep_sleep"]:
         # deepsleep() powers down and RESETS the board, so it never returns --
         # the whole script re-runs from the top on wake.
         deepsleep(interval)
     else:
-        # lightsleep() resumes on the next line, keeping the loop (and REPL) alive.
+        # lightsleep() resumes on the next line, keeping the loop alive (but it
+        # suspends USB, so the REPL/print() drop during the sleep).
         lightsleep(interval)
 
 

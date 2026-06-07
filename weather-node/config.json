@@ -1,6 +1,7 @@
 {
     "locationName": "office",
     "deep_sleep": false,
+    "dev_sleep": true,
     "interval_seconds": 15,
     "dht_pin": 16
 }
