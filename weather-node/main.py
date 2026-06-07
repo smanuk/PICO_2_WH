@@ -70,9 +70,16 @@ wlan = wifi.connect()
 
 # Initialize the DHT22 sensor
 sensor = weather_sensor.create(config["dht_pin"])
+utime.sleep(2) # gives the sensor time to start up.
 
 # Works for both modes: under deepsleep the board resets so the loop body runs
 # once per wake; under lightsleep it iterates normally.
 while True:
+
+    reading = weather_sensor.read(sensor)
+    if reading is not None:
+        
+        # Only power up the radio when there's actually something to ship.
+        wlan = wifi.connect()
     sleep(config["interval_seconds"])
     weather_sensor.read_and_report(sensor, config["location"])
