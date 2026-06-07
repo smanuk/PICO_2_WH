@@ -1,0 +1,8 @@
+{
+    "locationName": "office",
+    "deep_sleep": false,
+    "dev_sleep": true,
+    "interval_seconds": 15,
+    "dht_pin": 16,
+    "service_url": "http://octo.homehack.cc:8080/api/readings"
+}
