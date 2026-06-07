@@ -28,6 +28,25 @@ VS Code extension.
 To stop a running script, press `Ctrl+C` in the Pico REPL or run
 **MicroPico: Stop execution**.
 
+To list the files currently on the board, run **MicroPico: List files on Pico**,
+or from the Pico REPL:
+
+List Files
+```python
+import os
+os.listdir()      # files in the current directory
+os.listdir('/')   # root of the device filesystem
+```
+
+Delete files
+```python
+import os, rp2
+os.umount('/')
+bdev = rp2.Flash()
+os.VfsLfs2.mkfs(bdev)
+os.mount(bdev, '/')
+```
+
 ## Hardware
 
 - **Board:** Raspberry Pi Pico 2 W
