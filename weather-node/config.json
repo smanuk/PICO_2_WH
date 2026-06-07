@@ -1,5 +1,5 @@
 {
-    "location": "default",
+    "locationName": "office",
     "deep_sleep": false,
     "interval_seconds": 15,
     "dht_pin": 16
