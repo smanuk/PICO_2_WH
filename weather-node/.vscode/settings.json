@@ -1,11 +1,4 @@
 {
-    "python-envs.pythonProjects": [
-        {
-            "path": "DHT",
-            "envManager": "ms-python.python:venv",
-            "packageManager": "ms-python.python:pip"
-        }
-    ],
     "python.languageServer": "Pylance",
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticSeverityOverrides": {
@@ -18,16 +11,5 @@
     ],
     "python.analysis.extraPaths": [
         "~/.micropico-stubs/included"
-    ],
-    "micropico.syncFolder": "weather-node",
-    "micropico.pyIgnore": [
-        ".micropico",
-        ".vscode",
-        ".gitignore",
-        ".git",
-        "env",
-        "venv",
-        "secrets.example.json",
-        "main.py"
     ]
 }
