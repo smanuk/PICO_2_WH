@@ -1,10 +1,14 @@
-from machine import lightsleep, deepsleep
+from machine import lightsleep, deepsleep, Pin
 import json
 import utime
 
 import wifi
 import weather_sensor
 import reporter
+from logger import get_logger
+
+log = get_logger(__name__)
+
 
 # --- Config ----------------------------------------------------------------
 # Settings live in config.json on the device, read at runtime. Edit that file
@@ -41,7 +45,7 @@ def load_config():
         merged.update(cfg)
         return merged
     except (OSError, ValueError) as e:
-        print("Could not read config.json ({}); using defaults.".format(e))
+        log("Could not read config.json ({}); using defaults.".format(e))
         return dict(DEFAULTS)
 
 
@@ -66,7 +70,9 @@ def sleep(interval_seconds):
 
 
 config = load_config()
-print("Starting temp node: {}".format(config["locationName"]))
+log("Starting temp node: {}".format(config["locationName"]))
+
+led = Pin(15, Pin.OUT)
 
 # Initialize the DHT22 sensor
 sensor = weather_sensor.create(config["dht_pin"])
@@ -76,14 +82,27 @@ utime.sleep(2) # gives the sensor time to start up.
 # once per wake; under lightsleep it iterates normally.
 while True:
 
-    reading = weather_sensor.read(sensor)
-    if reading is not None:
-        
-        # Only power up the radio when there's actually something to ship.
-        wlan = wifi.connect()
-        if wlan is not None:
-            reporter.send(config["service_url"], reading, config["locationName"])
-        else:
-            print("WiFi unavailable; skipping send, reading kept locally: {}".format(reading))
-            
+    try:
+        led.toggle()
+
+        reading = weather_sensor.read(sensor)
+        if reading is not None:
+
+            # Only power up the radio when there's actually something to ship.
+            wlan = wifi.connect()
+            if wlan is not None:
+                reporter.send(config["service_url"], reading, config["locationName"])
+            else:
+                log("WiFi unavailable; skipping send, reading kept locally: {}".format(reading))
+    except Exception as e:
+        # Headless, an unhandled exception would just stop the script with no
+        # visible traceback. Log it so the next REPL session can see it.
+        log("loop error: {}".format(e))
+    finally:
+        # Leave the LED in a known-off state no matter how the body exited.
+        led.off()
+        # Power the radio down before sleeping. Leaving WiFi active makes
+        # lightsleep() wake immediately, so the loop would never pause.
+        wifi.disconnect()
+
     sleep(config["interval_seconds"])
