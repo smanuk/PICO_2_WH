@@ -101,5 +101,8 @@ while True:
     finally:
         # Leave the LED in a known-off state no matter how the body exited.
         led.off()
+        # Power the radio down before sleeping. Leaving WiFi active makes
+        # lightsleep() wake immediately, so the loop would never pause.
+        wifi.disconnect()
 
     sleep(config["interval_seconds"])

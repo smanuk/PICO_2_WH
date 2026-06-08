@@ -31,3 +31,15 @@ def connect(timeout_s=20, secrets_path="secrets.json"):
             time.sleep_ms(250)
     log("WiFi connected. IP: {}".format(wlan.ifconfig()[0]))
     return wlan
+
+
+def disconnect():
+    # Power the CYW43 radio down. Important before lightsleep(): if the WiFi
+    # chip is left active it keeps waking the CPU, so lightsleep returns almost
+    # immediately and the loop never actually pauses. Also saves power.
+    wlan = network.WLAN(network.STA_IF)
+    try:
+        wlan.disconnect()
+    except OSError:
+        pass
+    wlan.active(False)
