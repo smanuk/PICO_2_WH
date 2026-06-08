@@ -3,6 +3,10 @@
 from machine import Pin
 import dht
 
+from logger import get_logger
+
+log = get_logger(__name__)
+
 
 def create(pin):
     """Initialise a DHT22 on the given GPIO and return the sensor object."""
@@ -16,19 +20,19 @@ def read(sensor):
     None if the read fails (the only thing reported from here is the error).
     """
     try:
-        print("[TEMP LOG] read: triggering measure()")  # TEMP: remove
+        log("[TEMP LOG] read: triggering measure()")  # TEMP: remove
         # Trigger measurement
         sensor.measure()
 
         temperature = sensor.temperature()  # In Celsius
         humidity = sensor.humidity()  # In Percent
-        print("[TEMP LOG] read: temp={} humidity={}".format(  # TEMP: remove
+        log("[TEMP LOG] read: temp={} humidity={}".format(  # TEMP: remove
             temperature, humidity))  # TEMP: remove
         return {
             "temperature": temperature,
             "humidity": humidity,
         }
     except OSError as e:
-        print("[TEMP LOG] read: OSError -> returning None")  # TEMP: remove
-        print("Failed to read sensor DHT22. {}".format(e))
+        log("[TEMP LOG] read: OSError -> returning None")  # TEMP: remove
+        log("Failed to read sensor DHT22. {}".format(e))
         return None

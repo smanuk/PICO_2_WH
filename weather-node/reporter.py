@@ -7,6 +7,10 @@ except ImportError:
     import requests
 import json
 
+from logger import get_logger
+
+log = get_logger(__name__)
+
 
 def send(url, reading, location_name):
     """POST a reading (plus its location name) to the service.
@@ -30,10 +34,10 @@ def send(url, reading, location_name):
         )
         ok = 200 <= resp.status_code < 300
         if not ok:
-            print("Service returned HTTP {}.".format(resp.status_code))
+            log("Service returned HTTP {}.".format(resp.status_code))
         return ok
     except OSError as e:
-        print("Failed to send reading to {} ({}).".format(url, e))
+        log("Failed to send reading to {} ({}).".format(url, e))
         return False
     finally:
         # Always close, or MicroPython leaks the socket and later POSTs fail.
